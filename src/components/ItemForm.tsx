@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import type { Item, ItemInput } from '../db'
+import type { Item } from '../../shared/types'
+import type { ItemInput } from '../store'
 import { normaliseUrl, parsePriceToPence, penceToInput } from '../format'
 import { Checkbox } from './Checkbox'
 import { TrashIcon } from './icons'

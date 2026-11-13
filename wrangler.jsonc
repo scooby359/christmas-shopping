@@ -1,9 +1,39 @@
 {
-  // Static site served by Cloudflare Workers (static assets only, no server code).
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "christmas-shopping",
-  "compatibility_date": "2026-11-01",
-  "assets": {
-    "directory": "./dist"
-  }
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "christmas-shopping",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-11-01",
+	"observability": {
+		"enabled": true
+	},
+	"assets": {
+		// Only /api/* runs the Worker; everything else is served straight from static assets.
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	// Used to verify the Cloudflare Access sign-in token. Neither value is secret.
+	//   ACCESS_TEAM_DOMAIN: Zero Trust → Settings → Team name (e.g. "myteam" or "myteam.cloudflareaccess.com")
+	//   ACCESS_AUD: Zero Trust → Access → Applications → this app → "Application Audience (AUD) Tag"
+	"vars": {
+		"ACCESS_TEAM_DOMAIN": "dry-band-5350.cloudflareaccess.com",
+		"ACCESS_AUD": "f5ed3c70a188e90d0882e8ce6be65d718e00dca2e317802e6cc30cbed9c1b342"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "christmas-shopping",
+			"database_id": "da431db9-70f0-413a-809b-c36b9ce01705"
+		}
+	],
+	// Local development only: pretend a user is signed in through Cloudflare Access.
+	// In production, sign-in is enforced by enabling Access on the Worker in the dashboard.
+	"access": {
+		"dev": {
+			"aud": "local-dev",
+			"identity": {
+				"email": "you@example.com"
+			}
+		}
+	}
 }

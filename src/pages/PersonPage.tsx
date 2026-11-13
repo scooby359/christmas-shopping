@@ -1,6 +1,7 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { addItem, db, deleteItem, deletePerson, totalsFor, updateItem, updatePerson, type Item } from '../db'
+import { totalsFor, type Item } from '../../shared/types'
+import { addItem, deleteItem, deletePerson, updateItem, updatePerson, useStore } from '../store'
+import { OfflineBanner } from '../components/OfflineBanner'
 import { formatGBP, plural } from '../format'
 import { goHome } from '../hooks/useHashRoute'
 import { Avatar } from '../components/Avatar'
@@ -17,20 +18,13 @@ import { BackIcon, EditIcon, PlusIcon, TrashIcon } from '../components/icons'
 type Sheet = { kind: 'rename' } | { kind: 'addItem' } | { kind: 'editItem'; item: Item } | null
 
 export function PersonPage({ id }: { id: string }) {
-  const data = useLiveQuery(async () => {
-    const [person, items] = await Promise.all([
-      db.people.get(id),
-      db.items.where('personId').equals(id).sortBy('createdAt'),
-    ])
-    return { person, items }
-  }, [id])
+  const { data } = useStore()
   const [sheet, setSheet] = useState<Sheet>(null)
   const toast = useToast()
   const close = () => setSheet(null)
 
-  if (!data) return <div className="loading" />
-
-  const { person, items } = data
+  const person = data.people.find((p) => p.id === id)
+  const items = data.items.filter((i) => i.personId === id)
   if (!person) {
     return (
       <main className="page">
@@ -57,8 +51,7 @@ export function PersonPage({ id }: { id: string }) {
       : `Delete ${person.name}?`
     if (!window.confirm(msg)) return
     goHome()
-    await deletePerson(person.id)
-    toast(`Deleted ${person.name}`)
+    if (await deletePerson(person.id)) toast(`Deleted ${person.name}`)
   }
 
   return (
@@ -96,6 +89,7 @@ export function PersonPage({ id }: { id: string }) {
       </header>
 
       <main className="page page-overlap">
+        <OfflineBanner />
         <section className="card person-summary">
           <div className="person-summary-figures">
             <div>
@@ -168,9 +162,9 @@ export function PersonPage({ id }: { id: string }) {
           initialName={person.name}
           submitLabel="Save"
           onCancel={close}
-          onSubmit={async (name) => {
-            await updatePerson(person.id, { name })
-            close()
+          onSubmit={(name) => {
+            if (navigator.onLine) close()
+            void updatePerson(person.id, { name })
           }}
         />
       </Modal>
@@ -178,9 +172,9 @@ export function PersonPage({ id }: { id: string }) {
       <Modal open={sheet?.kind === 'addItem'} title={`Gift for ${person.name}`} onClose={close}>
         <ItemForm
           onCancel={close}
-          onSubmit={async (input) => {
-            await addItem(person.id, input)
-            close()
+          onSubmit={(input) => {
+            if (navigator.onLine) close()
+            void addItem(person.id, input)
           }}
         />
       </Modal>
@@ -191,16 +185,14 @@ export function PersonPage({ id }: { id: string }) {
             key={sheet.item.id}
             item={sheet.item}
             onCancel={close}
-            onSubmit={async (input) => {
-              // A cleared link is `undefined`, which Dexie's update() removes from the record.
-              await updateItem(sheet.item.id, input)
-              close()
+            onSubmit={(input) => {
+              if (navigator.onLine) close()
+              void updateItem(sheet.item.id, input)
             }}
-            onDelete={async () => {
+            onDelete={() => {
               if (!window.confirm(`Delete “${sheet.item.name}”?`)) return
-              await deleteItem(sheet.item.id)
-              close()
-              toast('Gift deleted')
+              if (navigator.onLine) close()
+              void deleteItem(sheet.item.id).then((ok) => ok && toast('Gift deleted'))
             }}
           />
         )}

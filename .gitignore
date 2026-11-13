@@ -3,3 +3,9 @@ dist
 .wrangler
 *.log
 .DS_Store
+
+# Local secrets (never commit)
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example

@@ -1,4 +1,4 @@
-import type { Person, Totals } from '../db'
+import type { Person, Totals } from '../../shared/types'
 import { formatGBP } from '../format'
 import { personHref } from '../hooks/useHashRoute'
 import { Avatar } from './Avatar'

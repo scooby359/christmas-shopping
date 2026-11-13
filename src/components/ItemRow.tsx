@@ -1,4 +1,5 @@
-import { updateItem, type Item } from '../db'
+import type { Item } from '../../shared/types'
+import { updateItem } from '../store'
 import { displayDomain, formatGBP, safeHref } from '../format'
 import { Checkbox } from './Checkbox'
 import { ExternalIcon } from './icons'

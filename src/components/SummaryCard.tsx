@@ -1,4 +1,4 @@
-import type { Totals } from '../db'
+import type { Totals } from '../../shared/types'
 import { formatGBP } from '../format'
 import { ProgressBar } from './ProgressBar'
 import { StarIcon } from './icons'

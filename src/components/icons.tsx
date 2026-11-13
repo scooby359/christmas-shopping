@@ -78,7 +78,19 @@ export const UploadIcon = (p: IconProps) => (
   </Icon>
 )
 
-export const ExternalIcon = (p: IconProps) => (
+export const LogOutIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+  </Icon>
+)
+
+export const RefreshIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5" />
+  </Icon>
+)
+
+export const ExternalIcon =(p: IconProps) => (
   <Icon {...p}>
     <path d="M7 17 17 7M7 7h10v10" />
   </Icon>

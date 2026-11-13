@@ -1,6 +1,7 @@
-import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { addPerson, db, totalsFor, type Item } from '../db'
+import { totalsFor, type Item } from '../../shared/types'
+import { addPerson, useStore } from '../store'
+import { OfflineBanner } from '../components/OfflineBanner'
 import { Countdown } from '../components/Countdown'
 import { EmptyState } from '../components/EmptyState'
 import { Menu } from '../components/Menu'
@@ -12,16 +13,10 @@ import { useToast } from '../components/Toast'
 import { PlusIcon } from '../components/icons'
 
 export function HomePage() {
-  const data = useLiveQuery(async () => {
-    const [people, items] = await Promise.all([db.people.orderBy('createdAt').toArray(), db.items.toArray()])
-    return { people, items }
-  })
+  const { people, items } = useStore().data
   const [adding, setAdding] = useState(false)
   const toast = useToast()
 
-  if (!data) return <div className="loading" />
-
-  const { people, items } = data
   const byPerson = new Map<string, Item[]>()
   for (const item of items) {
     const list = byPerson.get(item.personId)
@@ -45,6 +40,7 @@ export function HomePage() {
       </header>
 
       <main className="page page-overlap">
+        <OfflineBanner />
         <SummaryCard totals={totalsFor(items)} peopleCount={people.length} doneCount={doneCount} />
 
         {people.length === 0 ? (
@@ -82,10 +78,9 @@ export function HomePage() {
         <PersonForm
           submitLabel="Add"
           onCancel={() => setAdding(false)}
-          onSubmit={async (name) => {
-            await addPerson(name)
-            setAdding(false)
-            toast(`Added ${name}`)
+          onSubmit={(name) => {
+            if (navigator.onLine) setAdding(false)
+            void addPerson(name).then((ok) => ok && toast(`Added ${name}`))
           }}
         />
       </Modal>
